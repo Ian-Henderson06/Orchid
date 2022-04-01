@@ -57,6 +57,8 @@ public class OrchidNetwork : MonoBehaviour
 
     private void SetupServer()
     {
+        OrchidReflector.GetAllRPCMethods();
+        
         riptideServer = new Server();
         riptideServer.Start(runningPort, maxClients);
 
@@ -64,11 +66,19 @@ public class OrchidNetwork : MonoBehaviour
         riptideServer.ClientDisconnected += ServerOnClientDisconnected;
         
         EventSystem.ServerEvents.CallOnServerStarted();
+        
+        
     }
 
     private void SetupClient()
     {
+       // //No point in running the reflector twice if a client server
+      //  if(isServer)
+            OrchidReflector.GetAllRPCMethods();
+        
         riptideClient = new Client();
+        
+        Debug.Log("Setting up client");
 
         riptideClient.Connected += ClientDidConnect;
         riptideClient.ConnectionFailed += ClientFailedToConnect;
@@ -154,6 +164,34 @@ public class OrchidNetwork : MonoBehaviour
 
     public Server GetRiptideServer => riptideServer;
     public Client GetRiptideClient => riptideClient;
+
+    /// <summary>
+    /// Get the local type of network.
+    /// </summary>
+    /// <returns></returns>
+    public NetworkType GetLocalNetworkType()
+    {
+        NetworkType type;
+        if (isServer && isClient)
+        {
+            type = NetworkType.ClientHost;
+            return type;
+        }
+
+        if (isClient)
+        {
+            type = NetworkType.Client;
+            return type;
+        }
+
+        if (isServer)
+        {
+            type = NetworkType.Server;
+            return type;
+        }
+
+        return 0;
+    }
     
     #endregion
 }
