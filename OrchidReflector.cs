@@ -46,7 +46,7 @@ namespace Orchid
         }
 
         /// <summary>
-        /// Collects all methods with the 
+        /// Collects all methods with the OrchidRPC attribute.
         /// </summary>
         public static void GetAllRPCMethods()
         {
