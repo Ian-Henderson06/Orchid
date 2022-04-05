@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Logger = Orchid.Util.Logger;
 
 using System.Reflection;
+using System.Threading.Tasks;
+
 
 namespace Orchid
 {
@@ -20,11 +23,30 @@ namespace Orchid
     //TRY AND SUPPORT OVERLOADED METHODS - LOOK AT AMOUNT OF ARGUMENTS SENT MAYBE? OR LOOK FOR BRACKETS ([1]) OR SOMETHING IN STRING TO TELL WHAT METHOD TO RUN
     
     
-    /// <summary>
+
+    // <summary>
     /// Used to fetch all RPC methods via reflection.
     /// </summary>
     public static class OrchidReflector
     {
+        public delegate void RPCDelegate(params object[] arguments); //Delegate for a void function with any number of parameters.
+            
+        private static Dictionary<string, int> methodNameToId = new Dictionary<string, int>();
+        private static Dictionary<int, Type> methodIdToType = new Dictionary<int, Type>();
+
+        private static Dictionary<int, MethodInfo> methodIdToInfo =
+            new Dictionary<int, MethodInfo>();
+        
+        private static Dictionary<int, ParameterInfo[]> methodIdToParameters =
+            new Dictionary<int, ParameterInfo[]>();
+        
+      //  private static List<OrchidStructs.RPCInfo> rpcMethods = new List<OrchidStructs.RPCInfo>();
+        private static HashSet<Type> allowedTypes = new HashSet<Type>
+        {
+            typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(bool), typeof(string),
+            typeof(Vector3), typeof(Quaternion), typeof(Vector2), typeof(double[]), typeof(float[]), typeof(bool[]), typeof(string[]), typeof(byte[])
+        };
+
         /// <summary>
         /// Gets all classes and children of the given class.
         /// Inspired by TinyBirdNet
@@ -48,31 +70,99 @@ namespace Orchid
         /// <summary>
         /// Collects all methods with the OrchidRPC attribute.
         /// </summary>
-        public static void GetAllRPCMethods()
+        public static Task GetAllRPCMethods()
         {
             List<Type> types = GetAllClassesAndChildsOf<OrchidBehaviour>();
 
             foreach (Type type in types)
             {
-                // Fetch rpc methods
+                // Fetch local rpc methods for class
                 MethodInfo[] methods = type
-                    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(method => Attribute.IsDefined(method, typeof(OrchidRPC)))
+                    .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(method => Attribute.IsDefined(method, typeof(OrchidRPCAttribute)))
                     .ToArray();
 
-                foreach (var m in methods)
+                foreach (MethodInfo m in methods)
                 {
-                    Debug.Log(m.Name);
-                }
+                    ParameterInfo[] parameters = m.GetParameters();
+                    OrchidRPCAttribute rpc = (OrchidRPCAttribute)m.GetCustomAttributes(typeof(OrchidRPCAttribute), true)[0]; //Only ever one OrchidRPC attribute per method so we can just get the first one.
+                    
+                    
+                    //Check Parameters
+                    foreach (ParameterInfo par in parameters)
+                    {
+                        //Not an allowed type
+                        if (!allowedTypes.Contains(par.ParameterType))
+                        {
+                            Logger.LogError("Incompatible parameter used: " + par.Name + " typeof: " + par.ParameterType);
+                            return Task.CompletedTask;
+                        }
+                    }
+                    
+                    Logger.LogMessage(m.Name + " Registered");
 
-                
-                //.OrderBy(info => info.Name).ToArray();
-                //Array.Sort(methods,
-                //    delegate(MethodInfo x, MethodInfo y)
-                ///   {
-                //        return String.Compare(x.Name, y.Name, StringComparison.InvariantCulture);
-               //     });
+                    //If everything is good then assign it to the list
+                    //RPCInfo info = new RPCInfo(methodIdToInfo.Count, parameters);
+
+                    int methodId = methodNameToId.Count;
+                    
+                    methodIdToInfo.Add(methodId, m);
+                    
+                    //Assign its index in the list
+                    methodNameToId.Add(m.Name, methodId);
+                    
+                    //Assign its type in the list
+                    methodIdToType.Add(methodId, type);
+                    
+                    //Assign its parameters in the list
+                    methodIdToParameters.Add(methodId, parameters);
+                }
             }
+
+            return Task.CompletedTask;
         }
+        
+        public static void InvokeLocalRPC(string name, params object[] parameters)
+        {
+            int id = -1;
+            try
+            {
+                 id = methodNameToId[name];
+            }
+            catch (Exception e)
+            {
+                Logger.LogError("Cannot find RPC method requested.");
+                return;
+            }
+
+            methodIdToInfo[id].Invoke(null, parameters);
+        }
+        
+        #region Getters
+        /// <summary>
+        /// Get parameters for specified RPC method.
+        /// </summary>
+        /// <param name="methodId"></param>
+        /// <returns></returns>
+        public static ParameterInfo[] GetParameters(int methodId)
+        {
+            return methodIdToParameters[methodId];
+        }
+        
+        /// <summary>
+        /// Get Id for specified RPC name.
+        /// </summary>
+        /// <param name="methodId"></param>
+        /// <returns></returns>
+        public static int GetId(string methodName)
+        {
+            if (methodNameToId.ContainsKey(methodName))
+                return methodNameToId[methodName];
+            else
+                throw new Exception(String.Format("RPC called {0} was not found", methodName));
+        }
+        
+        #endregion
+        
     }
 }

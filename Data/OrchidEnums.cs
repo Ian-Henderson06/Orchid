@@ -13,4 +13,9 @@ namespace Orchid
         Server,
         ClientHost
     }
+
+    public enum MessageTypes
+    {
+        OrchidRPC
+    }
 }

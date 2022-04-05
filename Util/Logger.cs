@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Orchid
+namespace Orchid.Util
 {
     /// <summary>
     /// Small logger class to handle logging information.

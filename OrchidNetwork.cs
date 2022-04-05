@@ -1,12 +1,19 @@
 using Orchid;
+using Orchid.Events;
+using Orchid.Util;
+
 using RiptideNetworking;
 using RiptideNetworking.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Logger = Orchid.Logger;
+using Logger = Orchid.Util.Logger;
 
+
+/// <summary>
+/// Main Unity class for Orchid which handles connection and setup.
+/// </summary>
 public class OrchidNetwork : MonoBehaviour
 {
     [SerializeField] private bool isClient = false;
@@ -21,6 +28,8 @@ public class OrchidNetwork : MonoBehaviour
 
     private Server riptideServer;
     private Client riptideClient;
+
+    private NetworkType localNetworkType;
 
     // Singleton pattern
     private static OrchidNetwork _instance;
@@ -41,12 +50,16 @@ public class OrchidNetwork : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        localNetworkType = FindLocalNetworkType();
     }
     
-    void Start()
+     async void Start()
     {
         if(allowRiptideLogging)
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, allowRiptideTimestamps);
+        
+        await OrchidReflector.GetAllRPCMethods();
 
         if (isServer)
             SetupServer();
@@ -57,26 +70,20 @@ public class OrchidNetwork : MonoBehaviour
 
     private void SetupServer()
     {
-        OrchidReflector.GetAllRPCMethods();
-        
         riptideServer = new Server();
         riptideServer.Start(runningPort, maxClients);
 
         riptideServer.ClientConnected += ServerOnClientConnected;
         riptideServer.ClientDisconnected += ServerOnClientDisconnected;
         
-        EventSystem.ServerEvents.CallOnServerStarted();
-        
+        OrchidEvents.ServerEvents.CallOnServerStarted();
         
     }
 
     private void SetupClient()
     {
        // //No point in running the reflector twice if a client server
-      //  if(isServer)
-            OrchidReflector.GetAllRPCMethods();
-        
-        riptideClient = new Client();
+       riptideClient = new Client();
         
         Debug.Log("Setting up client");
 
@@ -85,7 +92,7 @@ public class OrchidNetwork : MonoBehaviour
         riptideClient.ClientDisconnected += ClientOtherClientDisconnected;
         riptideClient.Disconnected += ClientDidDisconnect;
         
-        EventSystem.ClientEvents.CallOnStarted();
+        OrchidEvents.ClientEvents.CallOnStarted();
     }
     
     /// <summary>
@@ -94,7 +101,8 @@ public class OrchidNetwork : MonoBehaviour
     void FixedUpdate()
     {
         if(isServer)
-            riptideServer?.Tick();
+            if(riptideServer.IsRunning)
+                riptideServer?.Tick();
         
         if(isClient)
             riptideClient?.Tick();
@@ -104,13 +112,13 @@ public class OrchidNetwork : MonoBehaviour
     {
         if (isServer)
         {
-            EventSystem.ServerEvents.CallOnServerStopped();
+            OrchidEvents.ServerEvents.CallOnServerStopped();
             riptideServer.Stop();
         }
 
         if (isClient)
         {
-            EventSystem.ClientEvents.CallOnClientStopped();
+            OrchidEvents.ClientEvents.CallOnClientStopped();
             riptideClient.Disconnect();
         }
     }
@@ -127,49 +135,137 @@ public class OrchidNetwork : MonoBehaviour
         else
             Logger.LogError("This is not a client. Please check OrchidNetwork settings.");
     }
+
+    /// <summary>
+    /// If client - send from client to server.
+    /// If server - send from server to all.
+    /// </summary>
+    /// <param name="message"></param>
+    public void SendMessageDefaultMethod(ref Message message)
+    {
+        switch (localNetworkType)
+        {
+            case NetworkType.ClientHost:
+                riptideServer.SendToAll(message);
+                break;
+            case NetworkType.Server:
+                riptideServer.SendToAll(message);
+                break;
+            case NetworkType.Client:
+                riptideClient.Send(message);
+                break;
+            
+        }
+    }
+
+    /// <summary>
+    /// Send message to all as server.
+    /// </summary>
+    /// <param name="message"></param>
+    public void ServerSendMessageToAll(ref Message message)
+    {
+        if (!isServer)
+        {
+            Logger.LogError("You are a client. Cannot send server message from a client.");
+            return;
+        }
+        
+        riptideServer.SendToAll(message);
+    }
+    
+    /// <summary>
+    /// Send message to a specific client.
+    /// </summary>
+    /// <param name="message"></param>
+    public void ServerSendMessageToSpecific(ushort clientId, ref Message message)
+    {
+        if (!isServer)
+        {
+            Logger.LogError("You are a client. Cannot send server message from a client.");
+            return;
+        }
+        
+        riptideServer.Send(message, clientId);
+    }
+    
+    /// <summary>
+    /// Send message to all clients except specified.
+    /// </summary>
+    /// <param name="message"></param>
+    public void ServerSendMessageExcluding(ushort clientId, ref Message message)
+    {
+        if (!isServer)
+        {
+            Logger.LogError("You are a client. Cannot send server message from a client.");
+            return;
+            
+        }
+        riptideServer.SendToAll(message, clientId);
+    }
+
+    /// <summary>
+    /// Send a message to the server.
+    /// </summary>
+    /// <param name="message"></param>
+    public void ClientSendMessage(ref Message message)
+    {
+        if (!isClient)
+        {
+            Logger.LogError("You are a server. Cannot send client message from a server.");
+            return;
+        }
+        
+        riptideClient.Send(message);
+    }
+
     
     
     #region Events
     private void ClientDidConnect(object sender, EventArgs e)
     {
-        EventSystem.ClientEvents.CallOnConnectedToServer();
+        OrchidEvents.ClientEvents.CallOnConnectedToServer();
     }
     
     private void ClientDidDisconnect(object sender, EventArgs e)
     {
-        EventSystem.ClientEvents.CallOnDisconnect();
+        OrchidEvents.ClientEvents.CallOnDisconnect();
     }
     
     private void ClientOtherClientDisconnected(object sender, ClientDisconnectedEventArgs e)
     {
-        EventSystem.ClientEvents.CallOnOtherClientDisconnected(e.Id);
+        OrchidEvents.ClientEvents.CallOnOtherClientDisconnected(e.Id);
     }
     
     private void ClientFailedToConnect(object sender, EventArgs e)
     {
-        EventSystem.ClientEvents.CallOnFailedToConnect();
+        OrchidEvents.ClientEvents.CallOnFailedToConnect();
     }
 
     private void ServerOnClientConnected(object sender, ServerClientConnectedEventArgs e)
     {
-        EventSystem.ServerEvents.CallOnClientConnected(e.Client.Id);
+        OrchidEvents.ServerEvents.CallOnClientConnected(e.Client.Id);
     }
     
     private void ServerOnClientDisconnected(object sender, ClientDisconnectedEventArgs e)
     {
-        EventSystem.ServerEvents.CallOnClientDisconnected(e.Id);
+        OrchidEvents.ServerEvents.CallOnClientDisconnected(e.Id);
     }
     #endregion
     #region Getters
 
-    public Server GetRiptideServer => riptideServer;
-    public Client GetRiptideClient => riptideClient;
+  //  public Server GetRiptideServer => riptideServer;
+   // public Client GetRiptideClient => riptideClient;
+   
+   /// <summary>
+   /// Get the local network type.
+   /// </summary>
+    public NetworkType GetLocalNetworkType => localNetworkType;
 
     /// <summary>
     /// Get the local type of network.
     /// </summary>
     /// <returns></returns>
-    public NetworkType GetLocalNetworkType()
+    private NetworkType FindLocalNetworkType()
     {
         NetworkType type;
         if (isServer && isClient)

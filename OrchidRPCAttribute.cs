@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using RiptideNetworking;
-using UnityEngine;
+
 
 namespace Orchid
 {
@@ -19,25 +19,18 @@ namespace Orchid
     /// Allows a method to be executed remotely by another machine.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class OrchidRPC : Attribute
+    public class OrchidRPCAttribute : Attribute
     {
-        private NetworkType caller;
-        private MessageSendMode sendMode;
+        private NetworkType target;
 
         public NetworkType GetCaller()
         {
-            return caller;
+            return target;
         }
-
-        public MessageSendMode GetSendMode()
+        
+        public OrchidRPCAttribute(NetworkType target, MessageSendMode sendMode = MessageSendMode.reliable)
         {
-            return sendMode;
-        }
-
-        public OrchidRPC(NetworkType caller, MessageSendMode sendMode = MessageSendMode.reliable)
-        {
-            this.caller = caller;
-            this.sendMode = sendMode;
+            this.target = target;
         }
 
     }

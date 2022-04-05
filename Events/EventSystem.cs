@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Orchid
+namespace Orchid.Events
 {
     /// <summary>
     /// Events system containing events relevant to the client and server.
     /// </summary>
-    public class EventSystem
+    public class OrchidEvents
     {
         /// <summary>
         /// All Events relevant to the server. These will not be called on the client.
