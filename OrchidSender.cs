@@ -5,32 +5,42 @@ using Logger = Orchid.Util.Logger;
 
 namespace Orchid
 {
-    public class OrchidSender
+    /// <summary>
+    /// Handles all riptide sending calls for client and server.
+    /// </summary>
+    internal class OrchidSender
     {
-        /// <summary>
-        /// Serialises the RPC  call and sends it to clients.
-        /// </summary>
-        /// <param name="methodID"></param>
-        /// <param name="parameters"></param>
-        public static void SendRPCToClients(string rpcName, params object[] parameters)
-        {
-            Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
-            SerializeRPC(ref message, rpcName, parameters);
-            OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
-        }
         
-        /// <summary>
-        /// Serialises the RPC and sends it to clients
-        /// </summary>
-        /// <param name="methodID"></param>
-        /// <param name="parameters"></param>
-        public static void SendRPCToServer(string rpcName, params object[] parameters)
-        {
-            Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
-            SerializeRPC(ref message, rpcName, parameters);
-            OrchidNetwork.Instance.ClientSendMessage(ref message);
-        }
-
+        #region Client Sending Methods
+            /// <summary>
+            /// Serialises the RPC  call and sends it to clients.
+            /// </summary>
+            /// <param name="methodID"></param>
+            /// <param name="parameters"></param>
+            public static void SendRPCToClients(string rpcName, params object[] parameters)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                SerializeRPC(ref message, rpcName, parameters);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+        #endregion
+        
+        #region Server Sending Mthods
+            /// <summary>
+            /// Serialises the RPC and sends it to clients
+            /// </summary>
+            /// <param name="methodID"></param>
+            /// <param name="parameters"></param>
+            public static void SendRPCToServer(string rpcName, params object[] parameters)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                SerializeRPC(ref message, rpcName, parameters);
+                OrchidNetwork.Instance.ClientSendMessage(ref message);
+            }
+        #endregion
+        
+        
+        #region Serializing Methods
         /// <summary>
         /// Add the correct data to the RPC message.
         /// </summary>
@@ -87,5 +97,6 @@ namespace Orchid
                 }
             }
         }
+        #endregion
     }
 }

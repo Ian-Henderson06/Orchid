@@ -7,32 +7,41 @@ using System;
 using System.Reflection;
 using Logger = Orchid.Util.Logger;
 
-//namespace Orchid
-//{
-    public class OrchidReceiver 
+namespace Orchid
+{ 
+    /// <summary>
+    /// Handles all riptide receiving calls for client and server.
+    /// </summary>
+    internal class OrchidReceiver 
     {
-        /// <summary>
-        /// Handle RPC receiving on client.
-        /// </summary>
-        /// <param name="message"></param>
-        /// <exception cref="Exception"></exception>
-        [MessageHandler((ushort)MessageTypes.OrchidRPC)]
-        private static void HandleRPCClient(Message message)
-        {
-            ParseRPC(message);
-        }
+        #region Client Receiving Methods
+            /// <summary>
+            /// Handle RPC receiving on client.
+            /// </summary>
+            /// <param name="message"></param>
+            /// <exception cref="Exception"></exception>
+            [MessageHandler((ushort)MessageTypes.OrchidRPC)]
+            private static void HandleRPCClient(Message message)
+            {
+                DeserializeRPC(message);
+            }
+        #endregion
         
-        /// <summary>
-        /// Handle RPC receiving on the server.
-        /// </summary>
-        /// <param name="message"></param>
-        [MessageHandler((ushort)MessageTypes.OrchidRPC)]
-        private static void HandleRPCServer(ushort fromClientId, Message message)
-        {
-            ParseRPC(message);
-        }
+        
+        #region Server Receiving Methods
+            /// <summary>
+            /// Handle RPC receiving on the server.
+            /// </summary>
+            /// <param name="message"></param>
+            [MessageHandler((ushort)MessageTypes.OrchidRPC)]
+            private static void HandleRPCServer(ushort fromClientId, Message message)
+            {
+                DeserializeRPC(message);
+            }
+        #endregion
 
-        private static void ParseRPC(Message message)
+        #region Deserialize Methods
+        private static void DeserializeRPC(Message message)
         { 
            string rpcName = message.GetString();
            int rpcMethodId = OrchidReflector.GetId(rpcName);
@@ -87,5 +96,7 @@ using Logger = Orchid.Util.Logger;
            
            OrchidReflector.InvokeLocalRPC(rpcName, parameters);
         }
+        
+        #endregion
     }
-//}
+}

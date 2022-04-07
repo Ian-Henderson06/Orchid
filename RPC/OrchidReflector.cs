@@ -27,7 +27,7 @@ namespace Orchid
     // <summary>
     /// Used to fetch all RPC methods via reflection.
     /// </summary>
-    public static class OrchidReflector
+    internal static class OrchidReflector
     {
         public delegate void RPCDelegate(params object[] arguments); //Delegate for a void function with any number of parameters.
             

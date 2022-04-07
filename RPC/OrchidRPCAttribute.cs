@@ -23,15 +23,20 @@ namespace Orchid
     {
         private NetworkType target;
 
-        public NetworkType GetCaller()
+        public NetworkType GetTarget()
         {
             return target;
         }
         
-        public OrchidRPCAttribute(NetworkType target, MessageSendMode sendMode = MessageSendMode.reliable)
-        {
-            this.target = target;
-        }
+       // public OrchidRPCAttribute(NetworkType target, MessageSendMode sendMode = MessageSendMode.reliable)
+       // {
+       //     this.target = target;
+      //  }
+
+      public OrchidRPCAttribute()
+      {
+          
+      }
 
     }
 }
