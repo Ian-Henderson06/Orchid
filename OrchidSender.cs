@@ -11,9 +11,9 @@ namespace Orchid
     internal class OrchidSender
     {
         
-        #region Client Sending Methods
+        #region Server Sending Methods
             /// <summary>
-            /// Serialises the RPC  call and sends it to clients.
+            /// Send an RPC call to all clients.
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
@@ -23,11 +23,23 @@ namespace Orchid
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
             }
+            
+            /// <summary>
+            /// Send an RPC call to a specific client.
+            /// </summary>
+            /// <param name="methodID"></param>
+            /// <param name="parameters"></param>
+            public static void SendRPCToClient(ushort clientID, string rpcName, params object[] parameters)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                SerializeRPC(ref message, rpcName, parameters);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
         #endregion
         
-        #region Server Sending Mthods
+        #region Client Sending Mthods
             /// <summary>
-            /// Serialises the RPC and sends it to clients
+            /// Send an RPC call to the server.
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>

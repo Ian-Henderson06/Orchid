@@ -1,15 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security;
 using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// Class used to ensure proper RPC serialisation.
+/// Deprecated Class used to ensure proper RPC serialisation.
 /// </summary>
 public abstract class OrchidBehaviour : MonoBehaviour
 {
-    // Made start async to allow await 
-    // As Orchid is replacing Unitys start and update methods.
+    // As Orchid is replacing Unity's start and update methods it needs to provide some overridable ones.
     void Start()
     {
         OrchidStart();
@@ -19,6 +20,10 @@ public abstract class OrchidBehaviour : MonoBehaviour
     void Update()
     {
         OrchidUpdate();
+    }
+
+    void FixedUpdate()
+    {
     }
 
     /// <summary>

@@ -66,13 +66,36 @@ namespace Orchid
 
             return types;
         }
+        
+        /// <summary>
+        /// Gets all classes and children of the given class.
+        /// Inspired by TinyBirdNet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static List<Type> GetAllClassesThatImplement<T>()
+        {
+            List<Type> types = new List<Type>();
+            var desiredType = typeof(T);
+
+          //  var type = typeof(T);
+            foreach(Type type in  AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => desiredType.IsAssignableFrom(p)))
+            {
+                types.Add(type);
+            }
+
+            return types;
+        }
 
         /// <summary>
         /// Collects all methods with the OrchidRPC attribute.
         /// </summary>
         public static Task GetAllRPCMethods()
         {
-            List<Type> types = GetAllClassesAndChildsOf<OrchidBehaviour>();
+            //List<Type> types = GetAllClassesAndChildsOf<OrchidBehaviour>();
+            List<Type> types = GetAllClassesThatImplement<IOrchidRPC>();
 
             foreach (Type type in types)
             {
