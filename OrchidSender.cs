@@ -17,9 +17,9 @@ namespace Orchid
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
-            public static void SendRPCToClients(string rpcName, params object[] parameters)
+            public static void ServerSendRPCToClients(string rpcName, params object[] parameters)
             {
-                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
             }
@@ -29,12 +29,70 @@ namespace Orchid
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
-            public static void SendRPCToClient(ushort clientID, string rpcName, params object[] parameters)
+            public static void ServerSendRPCToClient(ushort clientID, string rpcName, params object[] parameters)
             {
-                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
             }
+
+            /// <summary>
+            /// Send Object Spawn to all clients.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectSpawnToClients(long networkID, int prefabID, Vector3 position,
+                Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectSpawn);
+                message.AddLong(networkID);
+                message.AddInt(prefabID);
+                message.AddVector3(position);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+            
+            /// <summary>
+            /// Send Object Spawn to a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectSpawnToClient(ushort clientID, long networkID, int prefabID, Vector3 position,
+                Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectSpawn);
+                message.AddLong(networkID);
+                message.AddInt(prefabID);
+                message.AddVector3(position);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send Object Spawn to all excluding a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectSpawnExcludingClient(ushort clientID, long networkID, int prefabID, Vector3 position,
+                Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectSpawn);
+                message.AddLong(networkID);
+                message.AddInt(prefabID);
+                message.AddVector3(position);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
+            }
+
+
+            
+            
         #endregion
         
         #region Client Sending Mthods
@@ -43,13 +101,13 @@ namespace Orchid
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
-            public static void SendRPCToServer(string rpcName, params object[] parameters)
+            public static void ClientSendRPCToServer(string rpcName, params object[] parameters)
             {
-                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.OrchidRPC);
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ClientSendMessage(ref message);
             }
-        #endregion
+            #endregion
         
         
         #region Serializing Methods

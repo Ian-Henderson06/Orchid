@@ -31,6 +31,8 @@ public class OrchidNetwork : MonoBehaviour
 
     private NetworkType localNetworkType;
 
+    private ushort? localClientID = null;
+
     // Singleton pattern
     private static OrchidNetwork _instance;
     public static OrchidNetwork Instance
@@ -50,7 +52,6 @@ public class OrchidNetwork : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
         localNetworkType = FindLocalNetworkType();
     }
     
@@ -77,7 +78,6 @@ public class OrchidNetwork : MonoBehaviour
         riptideServer.ClientDisconnected += ServerOnClientDisconnected;
         
         OrchidEvents.ServerEvents.CallOnServerStarted();
-        
     }
 
     private void SetupClient()
@@ -91,6 +91,9 @@ public class OrchidNetwork : MonoBehaviour
         riptideClient.ConnectionFailed += ClientFailedToConnect;
         riptideClient.ClientDisconnected += ClientOtherClientDisconnected;
         riptideClient.Disconnected += ClientDidDisconnect;
+        
+        OrchidEvents.ServerEvents.OnClientConnected += OnClientConnect;
+        OrchidEvents.ClientEvents.OnConnectedToServer += OnClientConnect;
         
         OrchidEvents.ClientEvents.CallOnStarted();
     }
@@ -122,7 +125,49 @@ public class OrchidNetwork : MonoBehaviour
             riptideClient.Disconnect();
         }
     }
+
+    /// <summary>
+    /// This is called when a client connects - Its main role in this class is to assign local client id
+    /// If using clienthost then the localid is the local client
+    /// If server it is null
+    /// Not set if its a client
+    /// </summary>
+    /// <param name="client"></param>
+    private void OnClientConnect(ushort client)
+    {
+        //Not ever been assigned
+        if (localClientID == null)
+        {
+            //Get locally connected clients id.
+            if (GetLocalNetworkType == NetworkType.ClientHost)
+            {
+                localClientID = riptideServer.Clients[0].Id;
+            }
+        }
+    }
     
+    /// <summary>
+    /// Same as above but is used for the client 
+    /// </summary>
+    private void OnClientConnect()
+    {
+        //Not ever been assigned
+        if (localClientID == null)
+        {
+            //Get locally connected clients id.
+            if (GetLocalNetworkType == NetworkType.Client)
+            {
+                localClientID = riptideClient.Id;
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        OrchidEvents.ServerEvents.OnClientConnected -= OnClientConnect;
+        OrchidEvents.ClientEvents.OnConnectedToServer -= OnClientConnect;
+    }
+
     /// <summary>
     /// Connect to a server.
     /// </summary>
@@ -154,7 +199,6 @@ public class OrchidNetwork : MonoBehaviour
             case NetworkType.Client:
                 riptideClient.Send(message);
                 break;
-            
         }
     }
 
@@ -251,6 +295,7 @@ public class OrchidNetwork : MonoBehaviour
         OrchidEvents.ServerEvents.CallOnClientDisconnected(e.Id);
     }
     #endregion
+    
     #region Getters
 
   //  public Server GetRiptideServer => riptideServer;
@@ -260,6 +305,12 @@ public class OrchidNetwork : MonoBehaviour
    /// Get the local network type.
    /// </summary>
     public NetworkType GetLocalNetworkType => localNetworkType;
+
+   /// <summary>
+   /// Returns the local client ID - This is only valid for client or clienthost.
+   /// If server then this is null.
+   /// </summary>
+   public ushort? GetLocalClientID => localClientID;
 
     /// <summary>
     /// Get the local type of network.
@@ -288,6 +339,5 @@ public class OrchidNetwork : MonoBehaviour
 
         return 0;
     }
-    
     #endregion
 }

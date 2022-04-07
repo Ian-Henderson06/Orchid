@@ -5,6 +5,7 @@ using System.Reflection;
 using Orchid;
 using RiptideNetworking;
 using System;
+using UnityEngine;
 
 namespace Orchid
 {
@@ -29,5 +30,16 @@ namespace Orchid
             }
 
         }
+
+    /// <summary>
+    /// Stores information about a prefab.
+    /// </summary>
+    [System.Serializable]
+    public struct PrefabDetails
+    {
+        public int objectID;
+        public string objectName;
+        public GameObject objectPrefab;
+    }
         
 }

@@ -16,6 +16,8 @@ namespace Orchid
 
     public enum MessageTypes
     {
-        OrchidRPC
+        RPC,
+        ObjectSpawn,
+        ObjectDestroy,
     }
 }

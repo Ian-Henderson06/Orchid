@@ -23,10 +23,30 @@ namespace Orchid
             /// </summary>
             /// <param name="message"></param>
             /// <exception cref="Exception"></exception>
-            [MessageHandler((ushort)MessageTypes.OrchidRPC)]
+            [MessageHandler((ushort)MessageTypes.RPC)]
             private static void HandleRPCClient(Message message)
             {
                 DeserializeRPC(message);
+            }
+
+            [MessageHandler((ushort)MessageTypes.ObjectSpawn)]
+            private static void HandleObjectSpawn(Message message)
+            {
+                long networkID = message.GetLong();
+                int prefabID = message.GetInt();
+                Vector3 position = message.GetVector3();
+                Quaternion rotation = message.GetQuaternion();
+
+                GameObject obj = GameObject.Instantiate(
+                    OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
+                
+                if (obj.GetComponent<OrchidIdentity>() is null)
+                    obj.AddComponent<OrchidIdentity>();
+                
+                obj.GetComponent<OrchidIdentity>().SetNetworkID(networkID);
+                obj.GetComponent<OrchidIdentity>().SetPrefabID(prefabID);
+                
+                OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
             }
         #endregion
         
@@ -36,7 +56,7 @@ namespace Orchid
             /// Handle RPC receiving on the server.
             /// </summary>
             /// <param name="message"></param>
-            [MessageHandler((ushort)MessageTypes.OrchidRPC)]
+            [MessageHandler((ushort)MessageTypes.RPC)]
             private static void HandleRPCServer(ushort fromClientId, Message message)
             {
                 DeserializeRPC(message);
