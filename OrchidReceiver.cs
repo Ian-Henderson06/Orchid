@@ -48,6 +48,19 @@ namespace Orchid
                 
                 OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
             }
+
+            [MessageHandler((ushort)MessageTypes.ObjectDestroy)]
+            private static void HandleObjectDestroy(Message message)
+            {
+                long networkID = message.GetLong();
+                GameObject obj = OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID);
+                
+                if (obj != null)
+                {
+                    OrchidPrefabManager.Instance.RemoveAliveNetworkObject(networkID);
+                    GameObject.Destroy(obj);
+                }
+            }
         #endregion
         
         

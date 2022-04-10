@@ -25,7 +25,7 @@ public class OrchidPrefabManager : MonoBehaviour
     private Dictionary<string, int> nameToId = new Dictionary<string, int>();
     private Dictionary<int, string> idToName = new Dictionary<int, string>();
 
-    [SerializeField] private List<GameObject> aliveNetworkedObjects;
+    [SerializeField] private Dictionary<long, GameObject> aliveNetworkedObjects;
 
     // Singleton pattern
     private static OrchidPrefabManager _instance;
@@ -88,36 +88,71 @@ public class OrchidPrefabManager : MonoBehaviour
             Logger.LogError("Instantiated network object is null - cant add a reference to the prefab manager.");
             return;
         }
+
+        OrchidIdentity identity = obj.GetComponent<OrchidIdentity>();
+
+        if (identity is null)
+        {
+            Logger.LogError("Could not find OrchidIdentity on GameObject to add to alive list. Please make sure it is a network object.");
+        }
         
-        aliveNetworkedObjects.Add(obj);
+        
+        aliveNetworkedObjects.Add(identity.GetNetworkID(), obj);
     }
 
     /// <summary>
     /// Remove a reference to the alive network object.
     /// </summary>
     /// <param name="obj"></param>
-    public void RemoveAliveNetworkObject(GameObject obj)
+    public void RemoveAliveNetworkObject(long networkID)
     {
-        if (obj == null)
-        {
-            Logger.LogError("Provided object is null - cant remove object when provided object is null.");
-            return;
-        }
+       // if (networkID == null)
+       // {
+       //     Logger.LogError("Provided object is null - cant remove object when provided object is null.");
+       //     return;
+      //  }
 
-        if (!aliveNetworkedObjects.Contains(obj))
+        if (!aliveNetworkedObjects.ContainsKey(networkID))
         {
             Logger.LogError("Object you wish to remove is not in the alive list.");
             return;
         }
 
-        aliveNetworkedObjects.Remove(obj);
+        aliveNetworkedObjects.Remove(networkID);
+    }
+
+    /// <summary>
+    /// Get the alive network objects GameObject via its id.
+    /// </summary>
+    /// <param name="networkID"></param>
+    /// <returns></returns>
+    public GameObject FindAliveNetworkObject(long networkID)
+    {
+        return aliveNetworkedObjects[networkID];
+    }
+    
+    /// <summary>
+    /// Get the alive network objects that are of a specific prefab.
+    /// </summary>
+    /// <param name="networkID"></param>
+    /// <returns></returns>
+    public List<GameObject> FindAliveNetworkObjectOfPrefab(int prefabID)
+    {
+        List<GameObject> alive = new List<GameObject>();
+        foreach (KeyValuePair<long, GameObject> kv in aliveNetworkedObjects)
+        {
+            if(gameObject.GetComponent<OrchidIdentity>().GetPrefabID() == prefabID)
+                alive.Add(kv.Value);
+        }
+
+        return alive;
     }
 
     /// <summary>
     /// Get all currently alive networked game objects.
     /// </summary>
     /// <returns></returns>
-    public List<GameObject> GetAliveNetworkedGameObjects()
+    public Dictionary<long, GameObject> GetAliveNetworkedGameObjects()
     {
         return aliveNetworkedObjects;
     }

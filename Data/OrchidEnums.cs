@@ -4,20 +4,24 @@ using UnityEngine;
 
 namespace Orchid
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum NetworkType
+    public enum NetworkType 
     {
-        Client,
+        Client, 
         Server,
         ClientHost
     }
 
     public enum MessageTypes
     {
-        RPC,
-        ObjectSpawn,
-        ObjectDestroy,
+        RPC, //Send client to server and server to client
+        ObjectSpawn, //Sent server to client
+        ObjectDestroy, //Sent server to client
+    }
+
+    public enum ClientAuthorityType
+    {
+        None,
+        Input,
+        Full
     }
 }

@@ -89,11 +89,49 @@ namespace Orchid
                 message.AddQuaternion(rotation);
                 OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
             }
-
-
             
+            /// <summary>
+            /// Send Object Spawn to all clients.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectDestroyToClients(long networkID)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
+                message.AddLong(networkID);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
             
-        #endregion
+            /// <summary>
+            /// Send Object Spawn to a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectSpawnToClient(ushort clientID, long networkID)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
+                message.AddLong(networkID);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send Object Spawn to all excluding a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectSpawnExcludingClient(ushort clientID, long networkID)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
+                message.AddLong(networkID);
+                OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
+            }
+            #endregion
         
         #region Client Sending Mthods
             /// <summary>
@@ -107,6 +145,7 @@ namespace Orchid
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ClientSendMessage(ref message);
             }
+        
             #endregion
         
         

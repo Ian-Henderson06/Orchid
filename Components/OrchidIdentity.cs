@@ -1,3 +1,4 @@
+using Orchid;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class OrchidIdentity : MonoBehaviour
 {
     [ShowOnly] [SerializeField] private long? networkID = null;
     [ShowOnly] [SerializeField] private int? prefabID;
+    [ShowOnly] [SerializeField] private ClientAuthorityType clientAuthority = ClientAuthorityType.None;
 
     /// <summary>
     /// Set the network ID for the networked object.
@@ -70,6 +72,26 @@ public class OrchidIdentity : MonoBehaviour
         }
 
         return (int)prefabID;
+    }
+
+    /// <summary>
+    /// Get the current client authority level.
+    /// </summary>
+    /// <returns></returns>
+    public ClientAuthorityType GetClientAuthorityType()
+    {
+        return clientAuthority;
+    }
+
+    /// <summary>
+    /// Sets the client authority.
+    /// Note - Changing this on the client wont do anything.
+    /// This is serversided.
+    /// </summary>
+    /// <param name="type"></param>
+    public void SetClientAuthority(ClientAuthorityType authorityType)
+    {
+        clientAuthority = authorityType;
     }
     
 }
