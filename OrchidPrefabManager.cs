@@ -63,10 +63,10 @@ public class OrchidPrefabManager : MonoBehaviour
     {
         List<PrefabDetails> localTable;
 
-        if (clientsidePrefabs.Count > 0)
-            localTable = clientsidePrefabs;
-        else
+        if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             localTable = serversidePrefabs;
+        else
+            localTable = clientsidePrefabs;
 
         foreach (PrefabDetails details in localTable)
         {
@@ -170,6 +170,12 @@ public class OrchidPrefabManager : MonoBehaviour
     /// </summary>
     public GameObject GetPrefab(string name)
     {
+        if (!nameToPrefab.ContainsKey(name))
+        {
+            Logger.LogError($"{name} is not in the local dictionary.");
+            return null;
+        }
+        
         return nameToPrefab[name];
     }
 
@@ -178,8 +184,14 @@ public class OrchidPrefabManager : MonoBehaviour
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
-    public int GetID(string name)
+    public int GetPrefabID(string name)
     {
+        if (!nameToId.ContainsKey(name))
+        {
+            Logger.LogError($"{name} is not in the local dictionary.");
+            return -1;
+        }
+        
         return nameToId[name];
     }
     
@@ -190,6 +202,12 @@ public class OrchidPrefabManager : MonoBehaviour
     /// <returns></returns>
     public string GetName(int id)
     {
+        if (!idToName.ContainsKey(id))
+        {
+            Logger.LogError($"{id} is not in the local dictionary.");
+            return "";
+        }
+        
         return idToName[id];
     }
     
