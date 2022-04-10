@@ -12,17 +12,17 @@ namespace Orchid
         /// <summary>
         /// Spawn a networked object. Must be called by the server.
         /// </summary>
-        public static void SpawnNetworkedObject(int prefabID, Vector3 position, Quaternion rotation)
+        public static GameObject SpawnNetworkedObject(int prefabID, Vector3 position, Quaternion rotation)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Client)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
             {
                 Logger.LogError(
                     "Objects cannot be spawned by the client. Please check if local is server before calling SpawnNetworkedObject.");
-                return;
+                return null;
             }
 
             //Spawn collider object on server then invoke clients to spawn models.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Server)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
                 GameObject obj = GameObject.Instantiate(
                     OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
@@ -39,11 +39,13 @@ namespace Orchid
                 OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
                 
                 OrchidSender.ServerSendObjectSpawnToClients(networkID, prefabID, position, rotation);
+
+                return obj;
             }
             
             //Spawn client object on host client and then invoke other clients to spawn models.
             //Important to not spawn the object twice.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.ClientHost)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
                 GameObject obj = GameObject.Instantiate(
                     OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
@@ -59,15 +61,19 @@ namespace Orchid
                 //Add collider to alive networked objects
                 OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
 
-                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID;
+                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
                 if (localClientID == null)
                 {
-                    Logger.LogError("Trying to spawn object on clienthost - localid is null?");
+                    Logger.LogError("Trying to spawn object on clienthost - local client id is null?");
                 }
                 
                 //Spawn on all except current client
                 OrchidSender.ServerSendObjectSpawnExcludingClient((ushort)localClientID, networkID, prefabID, position, rotation);
+                
+                return obj;
             }
+
+            return null;
         }
 
         /// <summary>
@@ -76,7 +82,7 @@ namespace Orchid
         /// <param name="obj"></param>
         public static void SetPositionOnNetwork(GameObject obj, Vector3 position)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Client)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
             {
                 Logger.LogError(
                     "Objects position cannot be set on the client. Please check if local is server before calling SetPositionOnNetwork.");
@@ -93,7 +99,7 @@ namespace Orchid
 
 
             //Set objects position on server, and echos to clients 
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Server)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
                 long networkID = identity.GetNetworkID();
                 obj.transform.position = position;
@@ -102,12 +108,12 @@ namespace Orchid
 
             //Spawn client object on host client and then invoke other clients to spawn models.
             //Important to not spawn the object twice.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.ClientHost)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
                 long networkID = identity.GetNetworkID();
                 obj.transform.position = position;
                 
-                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID;
+                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
                 if (localClientID == null)
                 {
                     Logger.LogError("Trying to spawn object on clienthost - localid is null?");
@@ -124,7 +130,7 @@ namespace Orchid
         /// <param name="obj"></param>
         public static void SetRotationOnNetwork(GameObject obj, Quaternion rotation)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Client)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
             {
                 Logger.LogError(
                     "Objects rotation cannot be set on the client. Please check if local is server before calling SetRotationOnNetwork.");
@@ -141,7 +147,7 @@ namespace Orchid
 
 
             //Set objects position on server, and echos to clients 
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Server)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
                 long networkID = identity.GetNetworkID();
                 obj.transform.rotation = rotation;
@@ -150,12 +156,12 @@ namespace Orchid
 
             //Spawn client object on host client and then invoke other clients to spawn models.
             //Important to not spawn the object twice.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.ClientHost)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
                 long networkID = identity.GetNetworkID();
                 obj.transform.rotation = rotation;
                 
-                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID;
+                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
                 if (localClientID == null)
                 {
                     Logger.LogError("Trying to spawn object on clienthost - localid is null?");
@@ -172,7 +178,7 @@ namespace Orchid
         /// <param name="obj"></param>
         public static void DestroyNetworkedObject(GameObject obj)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Client)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
             {
                 Logger.LogError(
                     "Objects cannot be destroyed by the client. Please check if local is server before calling DestroyNetworkedObject.");
@@ -189,7 +195,7 @@ namespace Orchid
 
 
             //Spawn collider object on server then invoke clients to spawn models.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.Server)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
                 long networkID = identity.GetNetworkID();
                 
@@ -201,14 +207,14 @@ namespace Orchid
             
             //Spawn client object on host client and then invoke other clients to spawn models.
             //Important to not spawn the object twice.
-            if (OrchidNetwork.Instance.GetLocalNetworkType == NetworkType.ClientHost)
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
                 long networkID = identity.GetNetworkID();
                 
                 OrchidPrefabManager.Instance.RemoveAliveNetworkObject(networkID);
                 GameObject.Destroy(obj);
 
-                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID;
+                ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
                 if (localClientID == null)
                 {
                     Logger.LogError("Trying to spawn object on clienthost - localid is null?");

@@ -24,8 +24,8 @@ public class OrchidPrefabManager : MonoBehaviour
     private Dictionary<string, GameObject> nameToPrefab = new Dictionary<string, GameObject>();
     private Dictionary<string, int> nameToId = new Dictionary<string, int>();
     private Dictionary<int, string> idToName = new Dictionary<int, string>();
-
-    [SerializeField] private Dictionary<long, GameObject> aliveNetworkedObjects;
+    
+    private Dictionary<long, GameObject> aliveNetworkedObjects = new Dictionary<long, GameObject>();
 
     // Singleton pattern
     private static OrchidPrefabManager _instance;
