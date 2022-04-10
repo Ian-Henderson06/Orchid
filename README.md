@@ -4,7 +4,7 @@ Current Features:
   - Networked ID system.
   - Networked entity spawning and basic state updates (position, rotation).
   - Server authoritative system.
-  - Two way RPC calls client <---> Server.
+  - Two way RPC calls => Client <---> Server.
   - Event system.
 
 
