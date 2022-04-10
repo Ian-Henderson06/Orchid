@@ -61,6 +61,24 @@ namespace Orchid
                     GameObject.Destroy(obj);
                 }
             }
+
+            [MessageHandler((ushort)MessageTypes.ObjectPosition)]
+            private static void HandleObjectPositionUpdate(Message message)
+            {
+                long networkID = message.GetLong();
+                Vector3 position = message.GetVector3();
+
+                OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.position = position;
+            }
+            
+            [MessageHandler((ushort)MessageTypes.ObjectRotation)]
+            private static void HandleObjectRotationUpdate(Message message)
+            {
+                long networkID = message.GetLong();
+                Quaternion rotation = message.GetQuaternion();
+                OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.rotation = rotation;
+            }
+            
         #endregion
         
         

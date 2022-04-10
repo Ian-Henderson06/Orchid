@@ -37,7 +37,7 @@ namespace Orchid
             }
 
             /// <summary>
-            /// Send Object Spawn to all clients.
+            /// Send object spawn message to all clients.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
@@ -55,7 +55,7 @@ namespace Orchid
             }
             
             /// <summary>
-            /// Send Object Spawn to a specific client.
+            /// Send object spawn message to a specific client.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
@@ -73,7 +73,7 @@ namespace Orchid
             }
             
             /// <summary>
-            /// Send Object Spawn to all excluding a specific client.
+            /// Send object spawn message to all excluding a specific client.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
@@ -91,7 +91,7 @@ namespace Orchid
             }
             
             /// <summary>
-            /// Send Object Spawn to all clients.
+            /// Send object destroy message to all clients.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
@@ -105,13 +105,13 @@ namespace Orchid
             }
             
             /// <summary>
-            /// Send Object Spawn to a specific client.
+            /// Send object destroy to a specific client.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
             /// <param name="position"></param>
             /// <param name="rotation"></param>
-            public static void ServerSendObjectSpawnToClient(ushort clientID, long networkID)
+            public static void ServerSendObjectDestroyToClient(ushort clientID, long networkID)
             {
                 Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
                 message.AddLong(networkID);
@@ -119,21 +119,111 @@ namespace Orchid
             }
             
             /// <summary>
-            /// Send Object Spawn to all excluding a specific client.
+            /// Send object destroy message to all excluding a specific client.
             /// </summary>
             /// <param name="networkID"></param>
             /// <param name="prefabID"></param>
             /// <param name="position"></param>
             /// <param name="rotation"></param>
-            public static void ServerSendObjectSpawnExcludingClient(ushort clientID, long networkID)
+            public static void ServerSendObjectDestroyExcludingClient(ushort clientID, long networkID)
             {
                 Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
                 message.AddLong(networkID);
                 OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
             }
+            
+             /// <summary>
+            /// Send object position message to all clients.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectPositionToClients(long networkID, Vector3 position)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
+                message.AddLong(networkID);
+                message.AddVector3(position);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+            
+            /// <summary>
+            /// Send object position message to a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectPositionToClient(ushort clientID, long networkID, Vector3 position)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
+                message.AddLong(networkID);
+                message.AddVector3(position);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send object position message to all excluding a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectPositionExcludingClient(ushort clientID, long networkID, Vector3 position)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
+                message.AddLong(networkID);
+                message.AddVector3(position);
+                OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send object rotation message to all clients.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectRotationToClients(long networkID, Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectRotation);
+                message.AddLong(networkID);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+            
+            /// <summary>
+            /// Send object rotation message to a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectRotationToClient(ushort clientID, long networkID, Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectRotation);
+                message.AddLong(networkID);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send object rotation message to all excluding a specific client.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ServerSendObjectRotationExcludingClient(ushort clientID, long networkID, Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectRotation);
+                message.AddLong(networkID); 
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
+            }
             #endregion
         
-        #region Client Sending Mthods
+        #region Client Sending Methods
             /// <summary>
             /// Send an RPC call to the server.
             /// </summary>
