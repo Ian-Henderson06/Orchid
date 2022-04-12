@@ -14,6 +14,7 @@ namespace Orchid
     public enum MessageTypes
     {
         RPC, //Send client to server and server to client
+        Sync, //Sent server to client
         ObjectSpawn, //Sent server to client
         ObjectDestroy, //Sent server to client
         ObjectPosition, //Sent server to client and server to client if allowed

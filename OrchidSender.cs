@@ -12,14 +12,26 @@ namespace Orchid
     {
         
         #region Server Sending Methods
+
+            /// <summary>
+            /// Sends the current server tick to all clients.
+            /// </summary>
+            /// <param name="currentTick"></param>
+            public static void ServerSendTickToClients(uint currentTick)
+            {
+                Message message = Message.Create(MessageSendMode.unreliable, (ushort)MessageTypes.Sync);
+                message.AddUInt(currentTick);
+                OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+        
             /// <summary>
             /// Send an RPC call to all clients.
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
-            public static void ServerSendRPCToClients(string rpcName, params object[] parameters)
+            public static void ServerSendRPCToClients(MessageSendMode sendMode, string rpcName, params object[] parameters)
             {
-                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RPC);
+                Message message = Message.Create(sendMode, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
             }
@@ -29,9 +41,9 @@ namespace Orchid
             /// </summary>
             /// <param name="methodID"></param>
             /// <param name="parameters"></param>
-            public static void ServerSendRPCToClient(ushort clientID, string rpcName, params object[] parameters)
+            public static void ServerSendRPCToClient(MessageSendMode sendMode, ushort clientID, string rpcName, params object[] parameters)
             {
-                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RPC);
+                Message message = Message.Create(sendMode, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
             }

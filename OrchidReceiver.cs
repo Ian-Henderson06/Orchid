@@ -18,15 +18,17 @@ namespace Orchid
     internal class OrchidReceiver 
     {
         #region Client Receiving Methods
-            /// <summary>
-            /// Handle RPC receiving on client.
-            /// </summary>
-            /// <param name="message"></param>
-            /// <exception cref="Exception"></exception>
-            [MessageHandler((ushort)MessageTypes.RPC)]
+        [MessageHandler((ushort)MessageTypes.RPC)]
             private static void HandleRPCClient(Message message)
             {
                 DeserializeRPC(message);
+            }
+            
+            [MessageHandler((ushort)MessageTypes.Sync)]
+            private static void HandleSync(Message message)
+            {
+                uint lastServerTick = message.GetUInt();
+                OrchidNetwork.Instance.SetServerLastTick(lastServerTick);
             }
 
             [MessageHandler((ushort)MessageTypes.ObjectSpawn)]

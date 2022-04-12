@@ -16,11 +16,16 @@ using Logger = Orchid.Util.Logger;
 /// </summary>
 public class OrchidNetwork : MonoBehaviour
 {
+    [Header("General Settings")]
     [SerializeField] private bool isClient = false;
     [SerializeField] private bool isServer = false;
 
     [SerializeField] private bool allowRiptideLogging = true;
     [SerializeField] private bool allowRiptideTimestamps = false;
+    [Space(10)]
+    [SerializeField] private int tickRate = 40;
+    [SerializeField] private int tickDivergenceTolerance = 1;
+    [SerializeField] private uint ticksBetweenWorldUpdates = 2;
 
     [Header("Server Settings")] [SerializeField]
     private ushort runningPort;
@@ -31,9 +36,13 @@ public class OrchidNetwork : MonoBehaviour
     private Client riptideClient;
 
     private NetworkType? localNetworkType = null;
-
     private ushort? localClientID = null;
 
+    private uint currentTick; //This could overflow if the game is ran for a crazy amount of time - Will still need to be handled in case of very large tick rates.
+    private uint lastServerTick = 0; //Last tick client received from the server
+    
+    
+    
     // Singleton pattern
     private static OrchidNetwork _instance;
 
@@ -54,6 +63,9 @@ public class OrchidNetwork : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        Time.fixedDeltaTime = 1/tickRate; //Set time step - This must match on client and server
+        DontDestroyOnLoad(this);
+        
         localNetworkType = FindLocalNetworkType();
     }
 
@@ -103,11 +115,22 @@ public class OrchidNetwork : MonoBehaviour
     void FixedUpdate()
     {
         if (isServer)
+        {
+            if (currentTick % (5 * tickRate) == 0) //Every 5 seconds send update tick
+            {
+                OrchidSender.ServerSendTickToClients(currentTick);
+            }
+            
             if (riptideServer.IsRunning)
+            {
                 riptideServer?.Tick();
+            }
+        }
 
         if (isClient)
             riptideClient?.Tick();
+
+        currentTick++;
     }
 
     private void OnApplicationQuit()
@@ -222,6 +245,22 @@ public class OrchidNetwork : MonoBehaviour
         }
 
         riptideClient.Send(message);
+    }
+
+    /// <summary>
+    /// Set the last server tick received - This is used for interpolation and reconcillation
+    /// Only called on client or clienthost
+    /// </summary>
+    /// <param name="serverTick"></param>
+    public void SetServerLastTick(uint serverTick)
+    {
+        lastServerTick = serverTick - ticksBetweenWorldUpdates; //Set a late tick - used as interpolation tick
+        if (Mathf.Abs(currentTick - serverTick) > tickDivergenceTolerance)
+        {
+            Logger.LogMessage($"Client tick update: {currentTick} -> {serverTick}");
+            currentTick = serverTick; //May cause occasional jittering
+        }
+           
     }
 
 
