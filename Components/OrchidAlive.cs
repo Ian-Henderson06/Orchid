@@ -1,3 +1,4 @@
+using Antlr.Runtime.Tree;
 using Orchid.Util;
 using System;
 using System.Collections;
@@ -6,6 +7,7 @@ using System.Data.Common;
 using UnityEngine;
 using UnityEngine.Analytics;
 using Logger = Orchid.Util.Logger;
+using Network = Orchid.Network;
 
 /// <summary>
 /// Automatically adds GameObject to the alive list of the prefab manager.
@@ -15,6 +17,8 @@ using Logger = Orchid.Util.Logger;
 public class OrchidAlive : MonoBehaviour
 {
     [SerializeField] private int prefabID = -1;
+    [SerializeField] private bool destroyOnNetworkOnDestroy = true;
+    
     private OrchidIdentity identity;
     
     private void Awake()
@@ -37,5 +41,14 @@ public class OrchidAlive : MonoBehaviour
         
         identity.SetPrefabID(prefabID);
         OrchidPrefabManager.Instance.AddAliveNetworkedObject(identity.GetNetworkID(), identity.GetPrefabID(), gameObject);
+    }
+
+    /// <summary>
+    /// On destroy this gameobject will remove itself from the network.
+    /// </summary>
+    void OnDestroy()
+    {
+        if(destroyOnNetworkOnDestroy)
+            Network.DestroyNetworkedObject(gameObject);
     }
 }
