@@ -23,8 +23,9 @@ public class OrchidNetwork : MonoBehaviour
     [SerializeField] private bool allowRiptideLogging = true;
     [SerializeField] private bool allowRiptideTimestamps = false;
     [Space(10)]
-    [SerializeField] private int tickRate = 40;
+    [SerializeField] private float tickRate = 40;
     [SerializeField] private int tickDivergenceTolerance = 1;
+    [SerializeField] private bool useWorldUpdates = false;
     [SerializeField] private uint ticksBetweenWorldUpdates = 2;
 
     [Header("Server Settings")] [SerializeField]
@@ -38,7 +39,7 @@ public class OrchidNetwork : MonoBehaviour
     private NetworkType? localNetworkType = null;
     private ushort? localClientID = null;
 
-    private uint currentTick; //This could overflow if the game is ran for a crazy amount of time - Will still need to be handled in case of very large tick rates.
+    private uint currentTick; //This could overflow if the game is ran for a crazy amount of time - Will still need address this at some point most likely.
     private uint lastServerTick = 0; //Last tick client received from the server
     
     
@@ -63,9 +64,8 @@ public class OrchidNetwork : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        Time.fixedDeltaTime = 1/tickRate; //Set time step - This must match on client and server
+        Time.fixedDeltaTime = 1/tickRate; //Set time step - This should match on client and server
         DontDestroyOnLoad(this);
-        
         localNetworkType = FindLocalNetworkType();
     }
 
@@ -116,13 +116,21 @@ public class OrchidNetwork : MonoBehaviour
     {
         if (isServer)
         {
-            if (currentTick % (5 * tickRate) == 0) //Every 5 seconds send update tick
-            {
-                OrchidSender.ServerSendTickToClients(currentTick);
-            }
-            
             if (riptideServer.IsRunning)
             {
+                if (currentTick % (5 * tickRate) == 0) //Every 5 seconds send update tick
+                {
+                    OrchidSender.ServerSendTickToClients(currentTick);
+                }
+
+                if (useWorldUpdates)
+                {
+                    if (currentTick % ticksBetweenWorldUpdates == 0)
+                    {
+                        OrchidSender.ServerSendWorldStateToClients();
+                    }
+                }
+
                 riptideServer?.Tick();
             }
         }
@@ -373,5 +381,18 @@ public class OrchidNetwork : MonoBehaviour
 
         return null;
     }
+
+    /// <summary>
+    /// Get the current server/client tick.
+    /// </summary>
+    /// <returns></returns>
+    public uint GetCurrentTick() => currentTick;
+
+    /// <summary>
+    /// Get the last server tick that the server sent over.
+    /// </summary>
+    /// <returns></returns>
+    public uint GetLastServerTick() => lastServerTick;
+
     #endregion
 }

@@ -24,8 +24,10 @@ public class OrchidPrefabManager : MonoBehaviour
     private Dictionary<string, GameObject> nameToPrefab = new Dictionary<string, GameObject>();
     private Dictionary<string, int> nameToId = new Dictionary<string, int>();
     private Dictionary<int, string> idToName = new Dictionary<int, string>();
+    private Dictionary<long, int> netIdToPrefabId = new Dictionary<long, int>();
     
     private Dictionary<long, GameObject> aliveNetworkedObjects = new Dictionary<long, GameObject>();
+    private List<GameObject> aliveNetworkObjectsList = new List<GameObject>();
 
     // Singleton pattern
     private static OrchidPrefabManager _instance;
@@ -76,7 +78,7 @@ public class OrchidPrefabManager : MonoBehaviour
             idToName.Add(details.objectID, details.objectName);
         }
     }
-
+    
     /// <summary>
     /// Add a reference of the alive network object.
     /// </summary>
@@ -98,6 +100,24 @@ public class OrchidPrefabManager : MonoBehaviour
         
         
         aliveNetworkedObjects.Add(identity.GetNetworkID(), obj);
+        netIdToPrefabId.Add(identity.GetNetworkID(), identity.GetPrefabID());
+    }
+    
+    /// <summary>
+    /// Add a reference of the alive network object.
+    /// </summary>
+    /// <param name="obj"></param>
+    public void AddAliveNetworkedObject(long networkID, int prefabID, GameObject obj)
+    {
+        if (obj == null)
+        {
+            Logger.LogError("Instantiated network object is null - cant add a reference to the prefab manager.");
+            return;
+        }
+
+
+        aliveNetworkedObjects.Add(networkID, obj);
+        netIdToPrefabId.Add(networkID, prefabID);
     }
 
     /// <summary>
@@ -119,6 +139,7 @@ public class OrchidPrefabManager : MonoBehaviour
         }
 
         aliveNetworkedObjects.Remove(networkID);
+        netIdToPrefabId.Remove(networkID);
     }
 
     /// <summary>
@@ -128,7 +149,10 @@ public class OrchidPrefabManager : MonoBehaviour
     /// <returns></returns>
     public GameObject FindAliveNetworkObject(long networkID)
     {
-        return aliveNetworkedObjects[networkID];
+        if (aliveNetworkedObjects.ContainsKey(networkID))
+            return aliveNetworkedObjects[networkID];
+        
+        return null;
     }
     
     /// <summary>
@@ -158,11 +182,11 @@ public class OrchidPrefabManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get an prefabs prefab via its ID.
+    /// Get an prefabs prefab via its prefab ID.
     /// </summary>
-    public GameObject GetPrefab(int id)
+    public GameObject GetPrefab(int prefabId)
     {
-        return idToPrefab[id];
+        return idToPrefab[prefabId];
     }
     
     /// <summary>
@@ -196,7 +220,23 @@ public class OrchidPrefabManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Get an prefabs name via its ID.
+    /// Get an prefabs ID via its net id.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public int GetPrefabID(long networkID)
+    {
+        if (!netIdToPrefabId.ContainsKey(networkID))
+        {
+            Logger.LogError($"{networkID} is not in the local dictionary.");
+            return -1;
+        }
+        
+        return netIdToPrefabId[networkID];
+    }
+    
+    /// <summary>
+    /// Get an prefabs name via its prefab ID.
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>

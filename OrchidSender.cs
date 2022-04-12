@@ -1,4 +1,5 @@
 ﻿using RiptideNetworking;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using Logger = Orchid.Util.Logger;
@@ -34,6 +35,30 @@ namespace Orchid
                 Message message = Message.Create(sendMode, (ushort)MessageTypes.RPC);
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+            }
+            
+            /// <summary>
+            /// Sends the current world state to all clients.
+            /// </summary>
+            /// <param name="currentTick"></param>
+            public static void ServerSendWorldStateToClients()
+            {
+                foreach (KeyValuePair<long, GameObject> kv in
+                    OrchidPrefabManager.Instance.GetAliveNetworkedGameObjects())
+                {
+                    Message message = Message.Create(MessageSendMode.unreliable, (ushort)MessageTypes.WorldState);
+                    message.Add(kv.Key);
+                    message.AddInt(OrchidPrefabManager.Instance.GetPrefabID(OrchidPrefabManager.Instance.GetPrefabID(kv.Key)));
+                    message.AddVector3(kv.Value.transform.position);
+                    
+                    //Exclude local client if clienthost
+                    if(OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+                        OrchidNetwork.Instance.ServerSendMessageExcluding((ushort)OrchidNetwork.Instance.GetLocalClientID(), ref message);
+                    else if(OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
+                        OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
+                    
+                }
+               
             }
             
             /// <summary>

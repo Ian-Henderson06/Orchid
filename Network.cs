@@ -24,22 +24,10 @@ namespace Orchid
             //Spawn collider object on server then invoke clients to spawn models.
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
-                GameObject obj = GameObject.Instantiate(
-                    OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
-
-                if (obj.GetComponent<OrchidIdentity>() is null)
-                    obj.AddComponent<OrchidIdentity>();
-
                 long networkID = IDIssuer.GetUniqueNetworkID();
-                
-                obj.GetComponent<OrchidIdentity>().SetNetworkID(networkID);
-                obj.GetComponent<OrchidIdentity>().SetPrefabID(prefabID);
-                
-                //Add collider to alive networked objects
-                OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
+                GameObject obj = SpawnLocalNetworkObject(networkID, prefabID, position, rotation);
                 
                 OrchidSender.ServerSendObjectSpawnToClients(networkID, prefabID, position, rotation);
-
                 return obj;
             }
             
@@ -47,20 +35,9 @@ namespace Orchid
             //Important to not spawn the object twice.
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
-                GameObject obj = GameObject.Instantiate(
-                    OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
-
-                if (obj.GetComponent<OrchidIdentity>() is null)
-                    obj.AddComponent<OrchidIdentity>();
-
                 long networkID = IDIssuer.GetUniqueNetworkID();
+                GameObject obj = SpawnLocalNetworkObject(networkID, prefabID, position, rotation);
                 
-                obj.GetComponent<OrchidIdentity>().SetNetworkID(networkID);
-                obj.GetComponent<OrchidIdentity>().SetPrefabID(prefabID);
-                
-                //Add collider to alive networked objects
-                OrchidPrefabManager.Instance.AddAliveNetworkedObject(obj);
-
                 ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
                 if (localClientID == null)
                 {
@@ -224,5 +201,35 @@ namespace Orchid
                 OrchidSender.ServerSendObjectDestroyExcludingClient((ushort)localClientID, networkID);
             }
         }
+
+
+        /// <summary>
+        /// Spawn an object on the server without spawning on clients.
+        /// </summary>
+        /// <returns></returns>
+        public static GameObject SpawnLocalNetworkObject(long networkID, int prefabID, Vector3 position, Quaternion rotation)
+        {
+            GameObject obj = GameObject.Instantiate(
+                OrchidPrefabManager.Instance.GetPrefab(prefabID), position, rotation);
+
+            if (obj.GetComponent<OrchidIdentity>() is null)
+                obj.AddComponent<OrchidIdentity>();
+
+            obj.GetComponent<OrchidIdentity>().SetNetworkID(networkID);
+            obj.GetComponent<OrchidIdentity>().SetPrefabID(prefabID);
+                
+            //Add collider to alive networked objects
+            OrchidPrefabManager.Instance.AddAliveNetworkedObject(networkID, prefabID, obj);
+
+            ushort? localClientID = OrchidNetwork.Instance.GetLocalClientID();
+            if (localClientID == null)
+            {
+                Logger.LogError("Trying to spawn object on clienthost - local client id is null?");
+            }
+
+            return obj;
+        }
+        
+        
     }
 }

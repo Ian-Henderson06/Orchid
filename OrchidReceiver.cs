@@ -31,6 +31,26 @@ namespace Orchid
                 OrchidNetwork.Instance.SetServerLastTick(lastServerTick);
             }
 
+            [MessageHandler((ushort)MessageTypes.WorldState)]
+            private static void HandleWorldState(Message message)
+            {
+                long networkID = message.GetLong();
+                int prefabID = message.GetInt();
+                Vector3 position = message.GetVector3();
+                
+                GameObject reference = OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID);
+                
+                //Not been locally spawned
+                if (reference == null)
+                {
+                    _ = Network.SpawnLocalNetworkObject(networkID, prefabID, position, Quaternion.identity);
+                }
+                else   //Otherwise if locally spawned then make sure to set its positional info
+                {
+                    reference.transform.position = position;
+                }
+            }
+
             [MessageHandler((ushort)MessageTypes.ObjectSpawn)]
             private static void HandleObjectSpawn(Message message)
             {
@@ -82,8 +102,8 @@ namespace Orchid
             }
             
         #endregion
-        
-        
+
+
         #region Server Receiving Methods
             /// <summary>
             /// Handle RPC receiving on the server.

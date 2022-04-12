@@ -10,9 +10,9 @@ using Logger = Orchid.Util.Logger;
 /// </summary>
 public class OrchidIdentity : MonoBehaviour
 {
-    [ShowOnly] [SerializeField] private long? networkID = null;
-    [ShowOnly] [SerializeField] private int? prefabID;
-    [ShowOnly] [SerializeField] private ClientAuthorityType clientAuthority = ClientAuthorityType.None;
+    [SerializeField] private long networkID = -1;
+    [SerializeField] private int prefabID = -1;
+    [SerializeField] private ClientAuthorityType clientAuthority = ClientAuthorityType.None;
 
     /// <summary>
     /// Set the network ID for the networked object.
@@ -20,7 +20,7 @@ public class OrchidIdentity : MonoBehaviour
     /// <param name="networkID"></param>
     public void SetNetworkID(long networkID)
     {
-        if (this.networkID != null)
+        if (this.networkID != -1)
         {
             Logger.LogError($"Network ID for {gameObject.name} has already been set.");
             return;
@@ -35,7 +35,7 @@ public class OrchidIdentity : MonoBehaviour
     /// <param name="networkID"></param>
     public void SetPrefabID(int prefabID)
     {
-        if (this.prefabID != null)
+        if (this.prefabID != -1)
         {
             Logger.LogError($"Prefab ID for {gameObject.name} has already been set.");
             return;
@@ -50,28 +50,50 @@ public class OrchidIdentity : MonoBehaviour
     /// <returns></returns>
     public long GetNetworkID()
     {
-        if (networkID == null)
+        if (networkID == -1)
         {
             Logger.LogError($"You are trying to get a null Network ID for {gameObject.name}");
-            return -1;
         }
 
-        return (long)networkID;
+        return networkID;
     }
     
     /// <summary>
     /// Get the prefab ID for the networked object.
     /// </summary>
     /// <returns></returns>
-    public long GetPrefabID()
+    public int GetPrefabID()
     {
-        if (prefabID == null)
+        if (prefabID == -1)
         {
             Logger.LogError($"You are trying to get a null Prefab ID for {gameObject.name}");
-            return -1;
         }
 
-        return (int)prefabID;
+        return prefabID;
+    }
+
+    /// <summary>
+    /// Check if a network ID has been assigned to this identity.
+    /// </summary>
+    /// <returns></returns>
+    public bool HasNetworkIDAssigned()
+    {
+        if (networkID == -1)
+            return false;
+
+        return true;
+    }
+    
+    /// <summary>
+    /// Check if a prefab ID has been assigned to this identity.
+    /// </summary>
+    /// <returns></returns>
+    public bool HasNPrefabIDAssigned()
+    {
+        if (prefabID == -1)
+            return false;
+
+        return true;
     }
 
     /// <summary>
