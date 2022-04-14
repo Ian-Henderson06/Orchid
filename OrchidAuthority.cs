@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Logger = Orchid.Util.Logger;
 
 namespace Orchid
 {
@@ -15,12 +16,20 @@ namespace Orchid
 
         /// <summary>
         /// Register or update a clients authority with the authority system.
+        /// Objects can only have one owner at one level of authority.
         /// </summary>
         /// <param name="clientID"></param>
         /// <param name="networkID"></param>
         /// <param name="authorityLevel"></param>
         public static void RegisterClientAuthority(long networkID, ushort clientID, ClientAuthorityType authorityLevel)
         {
+            //Multiple authorities detected
+            if (GetAuthority(networkID) != ClientAuthorityType.None)
+            {
+                Logger.LogError("Objects can not have multiple levels of authority, or multiple owners.");
+                return;
+            }
+
             if(authorityLevel == ClientAuthorityType.Full)
                 objectsWithClientFullAuthority.Add(networkID, clientID);
             
@@ -42,6 +51,24 @@ namespace Orchid
             
             if (objectsWithClientInputAuthority.ContainsKey(networkID))
                 objectsWithClientInputAuthority.Remove(networkID);
+        }
+
+        /// <summary>
+        /// Get the client that owns this authority.
+        /// </summary>
+        /// <param name="networkID"></param>
+        /// <returns></returns>
+        public static ushort? GetAuthorityOwner(long networkID)
+        {
+            ushort? owner = null;
+
+            if (objectsWithClientInputAuthority.ContainsKey(networkID))
+                owner = objectsWithClientInputAuthority[networkID];
+            
+            if (objectsWithClientFullAuthority.ContainsKey(networkID))
+                owner = objectsWithClientFullAuthority[networkID];
+
+            return owner;
         }
 
         /// <summary>

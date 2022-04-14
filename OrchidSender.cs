@@ -300,6 +300,36 @@ namespace Orchid
                 SerializeRPC(ref message, rpcName, parameters);
                 OrchidNetwork.Instance.ClientSendMessage(ref message);
             }
+            
+            /// <summary>
+            /// Send object position message to the server.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ClientSendObjectPositionToServer(long networkID, Vector3 position)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectDestroy);
+                message.AddLong(networkID);
+                message.AddVector3(position);
+                OrchidNetwork.Instance.ClientSendMessage(ref message);
+            }
+            
+            /// <summary>
+            /// Send object rotation message to the server.
+            /// </summary>
+            /// <param name="networkID"></param>
+            /// <param name="prefabID"></param>
+            /// <param name="position"></param>
+            /// <param name="rotation"></param>
+            public static void ClientSendObjectRotationToServer(long networkID, Quaternion rotation)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectRotation);
+                message.AddLong(networkID);
+                message.AddQuaternion(rotation);
+                OrchidNetwork.Instance.ClientSendMessage(ref message);
+            }
         
             #endregion
         

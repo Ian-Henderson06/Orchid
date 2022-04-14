@@ -122,6 +122,43 @@ namespace Orchid
             {
                 DeserializeRPC(message);
             }
+            
+            [MessageHandler((ushort)MessageTypes.ObjectPosition)]
+            private static void HandleObjectPositionUpdateServer(ushort fromClientId, Message message)
+            {
+                //Server should check authority first
+                long networkID = message.GetLong();
+
+                ushort? authorityOwner = OrchidAuthority.GetAuthorityOwner(networkID);
+                if (authorityOwner == null)
+                    return;
+
+                if ((ushort)authorityOwner != fromClientId)
+                    return;
+                
+                
+                Vector3 position = message.GetVector3();
+                OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.position = position;
+                OrchidSender.ServerSendObjectPositionToClients(networkID, position);
+            }
+            
+            [MessageHandler((ushort)MessageTypes.ObjectRotation)]
+            private static void HandleObjectRotationUpdateServer(ushort fromClientId, Message message)
+            {
+                //Server should check authority first
+                long networkID = message.GetLong();
+                
+                ushort? authorityOwner = OrchidAuthority.GetAuthorityOwner(networkID);
+                if (authorityOwner == null)
+                    return;
+
+                if ((ushort)authorityOwner != fromClientId)
+                    return;
+                
+                Quaternion rotation = message.GetQuaternion();
+                OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.rotation = rotation;
+                OrchidSender.ServerSendObjectRotationToClients(networkID, rotation);
+            }
         #endregion
 
         #region Deserialize Methods

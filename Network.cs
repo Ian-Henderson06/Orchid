@@ -54,18 +54,11 @@ namespace Orchid
         }
 
         /// <summary>
-        /// Update a networked objects position across the network. Must be called on the server.
+        /// Update a networked objects position across the network. Must be called on the server. Or on client with authority.
         /// </summary>
         /// <param name="obj"></param>
         public static void SetPositionOnNetwork(GameObject obj, Vector3 position)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
-            {
-                Logger.LogError(
-                    "Objects position cannot be set on the client. Please check if local is server before calling SetPositionOnNetwork.");
-                return;
-            }
-
             OrchidIdentity identity = obj.GetComponent<OrchidIdentity>();
             if (identity is null)
             {
@@ -73,8 +66,19 @@ namespace Orchid
                     "Objects must be a Networked Object in order to change its position. Please make sure it has been spawned correctly.");
                 return;
             }
-
-
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
+            {
+                if (OrchidAuthority.GetAuthority(identity.GetNetworkID()) != ClientAuthorityType.Full)
+                {
+                    Logger.LogError(
+                        "You do not have authority over this object. Please get the server to assign you authority.");
+                    return;
+                }
+                
+                OrchidSender.ClientSendObjectPositionToServer(identity.GetNetworkID(), position);
+            }
+            
             //Set objects position on server, and echos to clients 
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
@@ -102,24 +106,29 @@ namespace Orchid
         }
         
          /// <summary>
-        /// Update a networked objects rotation across the network. Must be called on the server.
+        /// Update a networked objects rotation across the network. Must be called on the server. Or on client with authority.
         /// </summary>
         /// <param name="obj"></param>
         public static void SetRotationOnNetwork(GameObject obj, Quaternion rotation)
         {
-            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
-            {
-                Logger.LogError(
-                    "Objects rotation cannot be set on the client. Please check if local is server before calling SetRotationOnNetwork.");
-                return;
-            }
-
             OrchidIdentity identity = obj.GetComponent<OrchidIdentity>();
             if (identity is null)
             {
                 Logger.LogError(
                     "Objects must be a Networked Object in order to change its rotation. Please make sure it has been spawned correctly.");
                 return;
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
+            {
+                if (OrchidAuthority.GetAuthority(identity.GetNetworkID()) != ClientAuthorityType.Full)
+                {
+                    Logger.LogError(
+                        "You do not have authority over this object. Please get the server to assign you authority.");
+                    return;
+                }
+                
+                OrchidSender.ClientSendObjectRotationToServer(identity.GetNetworkID(), rotation);
             }
 
 
