@@ -8,10 +8,10 @@ Current Features:
   - Event system.
   - World state based updates (state of all networked objects on server without specific packet sending).
   - Synced tick system.
+  - Authority System
 
 To Add:
  - Client controlled entities.
- - Assigning authority/requesting authority.
  - Client interpolation.
  - Client prediction & server reconcilliation.
  - More events.
