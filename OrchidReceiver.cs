@@ -102,11 +102,18 @@ namespace Orchid
             }
 
             [MessageHandler((ushort)MessageTypes.RegisterAuthority)]
-            private static void HandleClientAuthorityUpdate(Message message)
+            private static void HandleClientAuthorityRegister(Message message)
             {
                 long networkID = message.GetLong();
                 ClientAuthorityType authorityLevel = (ClientAuthorityType)message.GetUShort();
                 OrchidAuthority.RegisterClientAuthority(networkID, (ushort)OrchidNetwork.Instance.GetLocalClientID(), authorityLevel);
+            }
+            
+            [MessageHandler((ushort)MessageTypes.UnregisterAuthority)]
+            private static void HandleClientAuthorityUnregister(Message message)
+            {
+                long networkID = message.GetLong();
+                OrchidAuthority.UnregisterClientAuthority(networkID, (ushort)OrchidNetwork.Instance.GetLocalClientID());
             }
             
         #endregion

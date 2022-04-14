@@ -315,5 +315,35 @@ namespace Orchid
                 OrchidSender.ServerSendObjectAuthorityUnregisterToClient(clientID, identity.GetNetworkID());
             }
         }
+
+        /// <summary>
+        /// Send inputs from client to server.
+        /// </summary>
+        public static void SendInputs(long networkID, bool[] inputs)
+        {
+            //If we have no local authority for this object then dont do anything
+            if (OrchidAuthority.GetAuthority(networkID) == ClientAuthorityType.None)
+            {
+                Logger.LogError(
+                    "Objects must be a Networked Object in order to send over inputs. Please make sure it has been spawned correctly.");
+                return;
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
+            {
+               //Send inputs to server
+            }
+            
+            //Set objects position on server, and echos to clients 
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
+            {
+               //Not allowed to send inputs
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+            {
+             //Just apply inputs locally
+            }
+        }
     }
 }
