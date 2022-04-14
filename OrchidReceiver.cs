@@ -100,6 +100,14 @@ namespace Orchid
                 Quaternion rotation = message.GetQuaternion();
                 OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.rotation = rotation;
             }
+
+            [MessageHandler((ushort)MessageTypes.RegisterAuthority)]
+            private static void HandleClientAuthorityUpdate(Message message)
+            {
+                long networkID = message.GetLong();
+                ClientAuthorityType authorityLevel = (ClientAuthorityType)message.GetUShort();
+                OrchidAuthority.RegisterClientAuthority(networkID, (ushort)OrchidNetwork.Instance.GetLocalClientID(), authorityLevel);
+            }
             
         #endregion
 

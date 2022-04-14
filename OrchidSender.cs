@@ -258,6 +258,34 @@ namespace Orchid
                 message.AddQuaternion(rotation);
                 OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
             }
+
+            /// <summary>
+            /// Send object authority update to client.
+            /// </summary>
+            /// <param name="clientID"></param>
+            /// <param name="networkID"></param>
+            /// <param name="type"></param>
+            public static void ServerSendObjectAuthorityRegisterToClient(ushort clientID, long networkID,
+                ClientAuthorityType type)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.RegisterAuthority);
+                message.AddLong(networkID); 
+                message.AddUShort((ushort)type);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
+            
+            /// <summary>
+            /// Send object authority unregister to client.
+            /// </summary>
+            /// <param name="clientID"></param>
+            /// <param name="networkID"></param>
+            /// <param name="type"></param>
+            public static void ServerSendObjectAuthorityUnregisterToClient(ushort clientID, long networkID)
+            {
+                Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.UnregisterAuthority);
+                message.AddLong(networkID);
+                OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
+            }
             #endregion
         
         #region Client Sending Methods

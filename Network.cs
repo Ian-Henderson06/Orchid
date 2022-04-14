@@ -202,9 +202,8 @@ namespace Orchid
             }
         }
 
-
         /// <summary>
-        /// Spawn an object on the server without spawning on clients.
+        /// Spawn an object locally on the server or clients without spawning on network.
         /// </summary>
         /// <returns></returns>
         public static GameObject SpawnLocalNetworkObject(long networkID, int prefabID, Vector3 position, Quaternion rotation)
@@ -229,7 +228,83 @@ namespace Orchid
 
             return obj;
         }
+
+        /// <summary>
+        /// Registers a client authority on the network. Can only be called by server.
+        /// </summary>
+        public static void RegisterClientAuthority(GameObject obj, ushort clientID, ClientAuthorityType type)
+        {
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
+            {
+                Logger.LogError(
+                    "Objects cannot be have authority set by the client. Please check if local is server before calling RegisterClientAuthority.");
+                return;
+            }
+            
+            OrchidIdentity identity = obj.GetComponent<OrchidIdentity>();
+            if (identity is null)
+            {
+                Logger.LogError(
+                    "Objects must be a Networked Object in order to change its authority level. Please make sure it has been spawned correctly.");
+                return;
+            }
+
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+            {
+                OrchidAuthority.RegisterClientAuthority(identity.GetNetworkID(), (ushort)OrchidNetwork.Instance.GetLocalClientID(), type);
+                
+                //If we are trying to set the local clients id
+                if (clientID == (ushort)OrchidNetwork.Instance.GetLocalClientID())
+                    return;
+                
+                //Else send out to the specific client
+                OrchidSender.ServerSendObjectAuthorityRegisterToClient(clientID, identity.GetNetworkID(), type);
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
+            {
+                OrchidAuthority.RegisterClientAuthority(identity.GetNetworkID(), (ushort)OrchidNetwork.Instance.GetLocalClientID(), type);
+                OrchidSender.ServerSendObjectAuthorityRegisterToClient(clientID, identity.GetNetworkID(), type);
+            }
+        }
         
-        
+        /// <summary>
+        /// Registers a client authority on the network. Can only be called by server.
+        /// </summary>
+        public static void UnRegisterClientAuthority(GameObject obj, ushort clientID, ClientAuthorityType type)
+        {
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
+            {
+                Logger.LogError(
+                    "Objects cannot be have authority unregistered by the client. Please check if local is server before calling UnRegisterClientAuthority.");
+                return;
+            }
+            
+            OrchidIdentity identity = obj.GetComponent<OrchidIdentity>();
+            if (identity is null)
+            {
+                Logger.LogError(
+                    "Objects must be a Networked Object in order to change its authority level. Please make sure it has been spawned correctly.");
+                return;
+            }
+
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+            {
+                OrchidAuthority.UnregisterClientAuthority(identity.GetNetworkID());
+                
+                //If we are trying to set the local clients id
+                if (clientID == (ushort)OrchidNetwork.Instance.GetLocalClientID())
+                    return;
+                
+                //Else send out to the specific client
+                OrchidSender.ServerSendObjectAuthorityUnregisterToClient(clientID, identity.GetNetworkID());
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
+            {
+                OrchidAuthority.UnregisterClientAuthority(identity.GetNetworkID());
+                OrchidSender.ServerSendObjectAuthorityUnregisterToClient(clientID, identity.GetNetworkID());
+            }
+        }
     }
 }

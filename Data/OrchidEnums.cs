@@ -15,6 +15,8 @@ namespace Orchid
     {
         RPC, //Send client to server and server to client
         Sync, //Sent server to client
+        RegisterAuthority, //Sent server to client
+        UnregisterAuthority, //Sent server to client
         WorldState, //Sent server to client
         ObjectSpawn, //Sent server to client
         ObjectDestroy, //Sent server to client
