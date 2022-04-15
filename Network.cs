@@ -1,4 +1,5 @@
 ﻿using Orchid.Util;
+using RiptideNetworking;
 using UnityEngine;
 using Logger = Orchid.Util.Logger;
 
@@ -319,30 +320,31 @@ namespace Orchid
         /// <summary>
         /// Send inputs from client to server.
         /// </summary>
-        public static void SendInputs(long networkID, bool[] inputs)
+        public static void SendInput(MessageSendMode sendMode, bool[] inputs)
         {
             //If we have no local authority for this object then dont do anything
-            if (OrchidAuthority.GetAuthority(networkID) == ClientAuthorityType.None)
-            {
-                Logger.LogError(
-                    "Objects must be a Networked Object in order to send over inputs. Please make sure it has been spawned correctly.");
-                return;
-            }
+            // if (OrchidAuthority.GetAuthority(networkID) == ClientAuthorityType.None)
+            //{
+            //}
             
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Client)
             {
                //Send inputs to server
+               OrchidSender.ClientSendInputToServer(sendMode, inputs);
+            }
+            
+            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+            {
+                //Just apply inputs locally
+                OrchidInput.GetInputHandler((ushort)OrchidNetwork.Instance.GetLocalClientID()).ProcessInputs(inputs);
             }
             
             //Set objects position on server, and echos to clients 
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.Server)
             {
-               //Not allowed to send inputs
-            }
-            
-            if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
-            {
-             //Just apply inputs locally
+                Logger.LogError(
+                    "Server cannot send inputs. These must be sent by client to the server.");
+                return;
             }
         }
     }

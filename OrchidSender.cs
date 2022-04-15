@@ -330,6 +330,18 @@ namespace Orchid
                 message.AddQuaternion(rotation);
                 OrchidNetwork.Instance.ClientSendMessage(ref message);
             }
+
+            /// <summary>
+            /// Send client inputs to the server.
+            /// </summary>
+            /// <param name="sendMode"></param>
+            /// <param name="inputs"></param>
+            public static void ClientSendInputToServer(MessageSendMode sendMode, bool[] inputs)
+            {
+                Message message = Message.Create(sendMode, (ushort)MessageTypes.Input);
+                message.AddBools(inputs);
+                OrchidNetwork.Instance.ClientSendMessage(ref message);
+            }
         
             #endregion
         

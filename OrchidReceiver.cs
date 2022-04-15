@@ -166,6 +166,27 @@ namespace Orchid
                 OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.rotation = rotation;
                 OrchidSender.ServerSendObjectRotationToClients(networkID, rotation);
             }
+            
+            [MessageHandler((ushort)MessageTypes.Input)]
+            private static void HandleInputsServer(ushort fromClientId, Message message)
+            {
+               //If from local clienthost do nothing because that's already handled in network
+               if(OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
+                if (fromClientId == OrchidNetwork.Instance.GetLocalClientID())
+                   return;
+
+               bool[] inputs = message.GetBools();
+               
+               //If not from client host then handle the input.
+               IOrchidInputHandler handler = OrchidInput.GetInputHandler(fromClientId);
+               if (handler == null)
+               {
+                   Logger.LogError($"No input handler setup for client: {fromClientId}");
+                   return;
+               }
+               
+               handler.ProcessInputs(inputs);
+            }
         #endregion
 
         #region Deserialize Methods

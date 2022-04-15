@@ -41,9 +41,7 @@ public class OrchidNetwork : MonoBehaviour
 
     private uint currentTick; //This could overflow if the game is ran for a crazy amount of time - Will still need address this at some point most likely.
     private uint lastServerTick = 0; //Last tick client received from the server
-    
-    
-    
+
     // Singleton pattern
     private static OrchidNetwork _instance;
 
