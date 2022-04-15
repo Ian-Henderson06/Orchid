@@ -113,7 +113,7 @@ namespace Orchid
             private static void HandleClientAuthorityUnregister(Message message)
             {
                 long networkID = message.GetLong();
-                OrchidAuthority.UnregisterClientAuthority(networkID, (ushort)OrchidNetwork.Instance.GetLocalClientID());
+                OrchidAuthority.UnregisterClientAuthority(networkID);
             }
             
         #endregion
