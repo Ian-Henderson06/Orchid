@@ -10,8 +10,8 @@ Current Features:
   - Synced tick system.
   - Authority System
   - Client controlled entities.
+  - Client interpolation.
 
 To Add:
- - Client interpolation.
  - Client prediction & server reconcilliation.
  - More events.
