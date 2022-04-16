@@ -50,7 +50,7 @@ namespace Orchid.Util
         
         private static string AddLogStarter(string message, string additional)
         {
-            return "[Orchid] " + additional + message;
+            return "[Orchid] " + $"[{OrchidNetwork.Instance.GetLocalNetworkType()}] " + additional + message;
         }
     }
 }

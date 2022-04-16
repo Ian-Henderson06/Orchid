@@ -182,7 +182,11 @@ namespace Orchid
             if (methodNameToId.ContainsKey(methodName))
                 return methodNameToId[methodName];
             else
-                throw new Exception(String.Format("RPC called {0} was not found", methodName));
+            {
+                Logger.LogError($"RPC called {methodName} was not found");
+                throw new Exception();
+            }
+            // throw new Exception(String.Format("RPC called {0} was not found", methodName));
         }
         
         #endregion
