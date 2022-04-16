@@ -88,7 +88,7 @@ public class OrchidIdentity : MonoBehaviour
     /// Check if a prefab ID has been assigned to this identity.
     /// </summary>
     /// <returns></returns>
-    public bool HasNPrefabIDAssigned()
+    public bool HasPrefabIDAssigned()
     {
         if (prefabID == -1)
             return false;

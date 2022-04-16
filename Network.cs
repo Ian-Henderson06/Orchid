@@ -28,6 +28,10 @@ namespace Orchid
                 long networkID = IDIssuer.GetUniqueNetworkID();
                 GameObject obj = SpawnLocalNetworkObject(networkID, prefabID, position, rotation);
                 
+                if(obj.transform.childCount > 0)
+                    HandleNetworkedObjectsChildren(obj);
+             
+                
                 OrchidSender.ServerSendObjectSpawnToClients(networkID, prefabID, position, rotation);
                 return obj;
             }
@@ -238,7 +242,8 @@ namespace Orchid
 
             return obj;
         }
-
+        
+       
         /// <summary>
         /// Registers a client authority on the network. Can only be called by server.
         /// </summary>
@@ -352,6 +357,22 @@ namespace Orchid
                     "Server cannot send inputs. These must be sent by client to the server.");
                 return;
             }
+        }
+
+        /// <summary>
+        /// If object has children that want to be networked, then assign and set them up correctly.
+        /// </summary>
+        /// <param name="go"></param>
+        private static void HandleNetworkedObjectsChildren(GameObject obj)
+        {
+          //  foreach (Transform child in obj.transform)
+          //  {
+             //   OrchidIdentity childIdentity = child.GetComponent<OrchidIdentity>();
+             //   if (childIdentity.GetNetworkID() == -1)
+               // {
+                //    childIdentity.SetNetworkID(IDIssuer.GetUniqueNetworkID());
+               // }
+          //  }
         }
     }
 }
