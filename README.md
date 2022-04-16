@@ -14,4 +14,5 @@ Current Features:
 
 To Add:
  - Client prediction & server reconcilliation.
+ - Networked children.
  - More events.
