@@ -36,6 +36,7 @@ namespace Orchid
             {
                 long networkID = message.GetLong();
                 int prefabID = message.GetInt();
+                uint tick = message.GetUInt();
                 Vector3 position = message.GetVector3();
                 
                 GameObject reference = OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID);
@@ -47,7 +48,12 @@ namespace Orchid
                 }
                 else   //Otherwise if locally spawned then make sure to set its positional info
                 {
-                    reference.transform.position = position;
+                    OrchidInterpolator interpolator = reference.GetComponent<OrchidInterpolator>();
+                    
+                    if(interpolator == null)
+                        reference.transform.position = position;
+                    else
+                        interpolator.AddPosition(tick, position);
                 }
             }
 
@@ -88,9 +94,16 @@ namespace Orchid
             private static void HandleObjectPositionUpdate(Message message)
             {
                 long networkID = message.GetLong();
+                uint tick = message.GetUInt();
                 Vector3 position = message.GetVector3();
 
-                OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.position = position;
+                GameObject aliveObject = OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID);
+                OrchidInterpolator interpolator = aliveObject.GetComponent<OrchidInterpolator>();
+                
+                if(interpolator == null)
+                    aliveObject.transform.position = position;
+                else
+                    interpolator.AddPosition(tick, position);
             }
             
             [MessageHandler((ushort)MessageTypes.ObjectRotation)]
@@ -142,7 +155,6 @@ namespace Orchid
 
                 if ((ushort)authorityOwner != fromClientId)
                     return;
-                
                 
                 Vector3 position = message.GetVector3();
                 OrchidPrefabManager.Instance.FindAliveNetworkObject(networkID).transform.position = position;

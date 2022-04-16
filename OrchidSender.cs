@@ -49,6 +49,7 @@ namespace Orchid
                     Message message = Message.Create(MessageSendMode.unreliable, (ushort)MessageTypes.WorldState);
                     message.Add(kv.Key);
                     message.AddInt(OrchidPrefabManager.Instance.GetPrefabID(OrchidPrefabManager.Instance.GetPrefabID(kv.Key)));
+                    message.AddUInt(OrchidNetwork.Instance.GetCurrentTick());
                     message.AddVector3(kv.Value.transform.position);
                     
                     //Exclude local client if clienthost
@@ -180,6 +181,7 @@ namespace Orchid
             {
                 Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
                 message.AddLong(networkID);
+                message.AddUInt(OrchidNetwork.Instance.GetCurrentTick());
                 message.AddVector3(position);
                 OrchidNetwork.Instance.ServerSendMessageToAll(ref message);
             }
@@ -195,6 +197,7 @@ namespace Orchid
             {
                 Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
                 message.AddLong(networkID);
+                message.AddUInt(OrchidNetwork.Instance.GetCurrentTick());
                 message.AddVector3(position);
                 OrchidNetwork.Instance.ServerSendMessageToSpecific(clientID, ref message);
             }
@@ -210,6 +213,7 @@ namespace Orchid
             {
                 Message message = Message.Create(MessageSendMode.reliable, (ushort)MessageTypes.ObjectPosition);
                 message.AddLong(networkID);
+                message.AddUInt(OrchidNetwork.Instance.GetCurrentTick());
                 message.AddVector3(position);
                 OrchidNetwork.Instance.ServerSendMessageExcluding(clientID, ref message);
             }

@@ -41,5 +41,20 @@ namespace Orchid
         public string objectName;
         public GameObject objectPrefab;
     }
+
+    /// <summary>
+    /// Used for interpolation to store a position at a specific tick
+    /// </summary>
+    public struct PositionAtTick
+    {
+        public uint tick;
+        public Vector3 position;
+
+        public PositionAtTick(uint tick, Vector3 position)
+        {
+            this.tick = tick;
+            this.position = position;
+        }
+    }
         
 }

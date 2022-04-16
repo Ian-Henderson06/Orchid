@@ -333,6 +333,15 @@ public class OrchidNetwork : MonoBehaviour
         return localClientID;
     }
 
+    /// <summary>
+    /// Gets the amount of ticks between positional updates.
+    /// </summary>
+    /// <returns></returns>
+    public uint GetTicksBetweenPositionUpdates()
+    {
+        return ticksBetweenWorldUpdates;
+    }
+
 
 
     /// <summary>
