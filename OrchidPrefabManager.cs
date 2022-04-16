@@ -45,7 +45,7 @@ public class OrchidPrefabManager : MonoBehaviour
         }
     }
 
-    private void Awake()
+    private void Start()
     {
         Instance = this;
 
