@@ -335,8 +335,14 @@ namespace Orchid
             
             if (OrchidNetwork.Instance.GetLocalNetworkType() == NetworkType.ClientHost)
             {
+                IOrchidInputHandler handler = OrchidInput.GetInputHandler((ushort)OrchidNetwork.Instance.GetLocalClientID());
+                if (handler == null)
+                {
+                    Logger.LogError("No input handler on clienthost object that is trying to send inputs.");
+                    return;
+                }
                 //Just apply inputs locally
-                OrchidInput.GetInputHandler((ushort)OrchidNetwork.Instance.GetLocalClientID()).ProcessInputs(inputs);
+                handler.ProcessInputs(inputs);
             }
             
             //Set objects position on server, and echos to clients 
