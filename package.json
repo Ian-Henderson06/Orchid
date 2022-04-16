@@ -3,7 +3,7 @@
     "displayName": "Orchid",
     "version": "1.0.0",
     "unity": "2018.1",
-    "description": "Orchid aims to provide an abstraction layer ontop of Riptide for easier networked games development.",
+    "description": "Orchid aims to provide an abstraction layer on top of Riptide for easier networked games development.",
     "keywords": ["Network", "Riptide", "Library"],
     "category": "Networking",
     "dependencies": {
