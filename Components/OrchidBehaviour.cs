@@ -18,9 +18,12 @@ public class OrchidBehaviour : MonoBehaviour
     protected NetworkType localNetwork;
     
     // As Orchid is replacing Unity's start and update methods it needs to provide some overridable ones.
-    void Start()
+    async void Start()
     {
         localNetwork = OrchidNetwork.Instance.GetLocalNetworkType();
+        
+        //Wait until prefab manager has initialised.
+        await OrchidPrefabManager.Instance.WaitUntilInit();
         
         OrchidStart();
         

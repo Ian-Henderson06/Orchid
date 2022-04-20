@@ -2,6 +2,7 @@ using Orchid;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using Logger = Orchid.Util.Logger;
 
@@ -29,26 +30,23 @@ public class OrchidPrefabManager : MonoBehaviour
     private Dictionary<long, GameObject> aliveNetworkedObjects = new Dictionary<long, GameObject>();
     private List<GameObject> aliveNetworkObjectsList = new List<GameObject>();
 
-    // Singleton pattern
+    private TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+    
     private static OrchidPrefabManager _instance;
-    public static OrchidPrefabManager Instance
+    public static OrchidPrefabManager Instance { get { return _instance; } }
+
+    private void Awake()
     {
-        get => _instance;
-        private set
+        if (_instance != null && _instance != this)
         {
-            if (_instance == null)
-                _instance = value;
-            else if(_instance != value)
-            { 
-                //Silently handle this.
-            }
+            Destroy(this.gameObject);
+        } else {
+            _instance = this;
         }
     }
 
     private void Start()
     {
-        Instance = this;
-
         if (serversidePrefabs.Count > 0 && clientsidePrefabs.Count > 0)
         {
             Logger.LogError("Only one list should be populated in PrefabManager. Clienthost - clientside prefabs. Server - serverside prefabs. Client - clientside prefabs, ");
@@ -56,6 +54,14 @@ public class OrchidPrefabManager : MonoBehaviour
         }
 
         PopulateDictionaries();
+    }
+
+    /// <summary>
+    /// Wait until the prefab manager has initialised.
+    /// </summary>
+    public async Task WaitUntilInit()
+    {
+        await tcs.Task;
     }
 
     /// <summary>
@@ -77,6 +83,8 @@ public class OrchidPrefabManager : MonoBehaviour
             nameToId.Add(details.objectName, details.objectID);
             idToName.Add(details.objectID, details.objectName);
         }
+        
+        tcs.SetResult(1);
     }
     
     /// <summary>
@@ -186,6 +194,12 @@ public class OrchidPrefabManager : MonoBehaviour
     /// </summary>
     public GameObject GetPrefab(int prefabId)
     {
+        if (!idToPrefab.ContainsKey(prefabId))
+        {
+            Logger.LogError($"{prefabId} is not in the local dictionary.");
+            return null;
+        }
+        
         return idToPrefab[prefabId];
     }
     
